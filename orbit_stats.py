@@ -12,11 +12,15 @@ def get_drm(co, esl):
     e_drm = 8 - 2 * sum(int(esl[i]) for i in range(4, 8))
     return c_drm, e_drm
 
-def get_arm(co, esl):
-    c_arm = sum (int(co[i] == '1') for i in (1, 3, 4, 6)) + \
+def get_carm(co):
+    return sum (int(co[i] == '1') for i in (1, 3, 4, 6)) + \
                 sum(int(co[i] == '2') for i in (0, 2, 5, 7))
-    e_arm = sum(int(esl[i] == '1') for i in (0, 2, 8, 10))
-    return c_arm, e_arm
+
+def get_earm(esl):
+    return sum(int(esl[i] == '1') for i in (0, 2, 8, 10))
+
+def get_arm(co, esl):
+    return get_carm(co), get_earm(esl)
 
 # Orbit 1 : ULF, URB, DRF, DLB
 # Orbit 2 : ULB, URF, DLF, DRB
@@ -48,7 +52,7 @@ def get_corner_case(co):
     # 4d : U F2 R like (orbits (0,4), UD and LR are (2,2))
 
     orbit_splits = get_orbit_splits(co)
-    ca = get_arm(co, esl)[0]  # Corner arm
+    ca = get_carm(co)  # Corner arm
     if orbit_splits in ((3, 1), (1,3)):
         return '4c'
     elif orbit_splits in ((0, 4), (4, 0)):
@@ -87,37 +91,38 @@ def edge_index(cc, arm):
     
     return arm[1]
 
-orbit_data = np.zeros((n_corner_cases, 3), 
-    dtype=[("n_cases", int),
-           ("avg_length", np.float64),
-           ("sub6_probability", np.float64),
-           ("sub7_probability", np.float64)])
+if __name__ == "__main__":
+    orbit_data = np.zeros((n_corner_cases, 3), 
+        dtype=[("n_cases", int),
+            ("avg_length", np.float64),
+            ("sub6_probability", np.float64),
+            ("sub7_probability", np.float64)])
 
-with open("full_data.csv", "r", encoding="utf-8") as file:
+    with open("full_data.csv", "r", encoding="utf-8") as file:
 
-    for line in file:
-        index, co, esl, d, sol = unpack(line)
-        drm, arm, orbit = get_drm(co, esl), get_arm(co, esl), get_orbit_splits(co)
-        cc = get_corner_case(co)
-        if drm == (4, 4):
-            ci = cc_to_index[cc]
-            ei = edge_index(cc, arm)
-            # if cc in ('4b.2'): print(sol, cc, ei)
-            orbit_data[ci, ei]['n_cases'] += 1
-            orbit_data[ci, ei]['avg_length'] += d
-            if d < 6:
-                orbit_data[ci, ei]['sub6_probability'] += 1
-            if d < 7:
-                orbit_data[ci, ei]['sub7_probability'] += 1
+        for line in file:
+            index, co, esl, d, sol = unpack(line)
+            drm, arm, orbit = get_drm(co, esl), get_arm(co, esl), get_orbit_splits(co)
+            cc = get_corner_case(co)
+            if drm == (4, 4):
+                ci = cc_to_index[cc]
+                ei = edge_index(cc, arm)
+                # if cc in ('4b.2'): print(sol, cc, ei)
+                orbit_data[ci, ei]['n_cases'] += 1
+                orbit_data[ci, ei]['avg_length'] += d
+                if d < 6:
+                    orbit_data[ci, ei]['sub6_probability'] += 1
+                if d < 7:
+                    orbit_data[ci, ei]['sub7_probability'] += 1
 
-for ci in range(n_corner_cases):
-    for ei in range(3):
-        if orbit_data[ci, ei]['n_cases'] != 0:
-            orbit_data[ci, ei]['avg_length'] /= orbit_data[ci, ei]['n_cases']
-            orbit_data[ci, ei]['sub6_probability'] /= orbit_data[ci, ei]['n_cases']
-            orbit_data[ci, ei]['sub7_probability'] /= orbit_data[ci, ei]['n_cases']
+    for ci in range(n_corner_cases):
+        for ei in range(3):
+            if orbit_data[ci, ei]['n_cases'] != 0:
+                orbit_data[ci, ei]['avg_length'] /= orbit_data[ci, ei]['n_cases']
+                orbit_data[ci, ei]['sub6_probability'] /= orbit_data[ci, ei]['n_cases']
+                orbit_data[ci, ei]['sub7_probability'] /= orbit_data[ci, ei]['n_cases']
 
-print(orbit_data['n_cases'])
-print(orbit_data['sub6_probability'])
-print(orbit_data['sub7_probability'])
-print(orbit_data['avg_length'])
+    print(orbit_data['n_cases'])
+    print(orbit_data['sub6_probability'])
+    print(orbit_data['sub7_probability'])
+    print(orbit_data['avg_length'])
