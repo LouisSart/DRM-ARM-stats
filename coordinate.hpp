@@ -115,7 +115,8 @@ void perm_from_coord(uint coord, uint n, uint* perm) {
     // out: the permutation, aka the array
     // containing the uintegers 0 to n-1
     // correctly permuted
-    uint icount[n]{0}, k{2};
+    uint* icount = new uint[n](); // Initialize to 0
+    uint k{2};
     uint c = coord;
 
     while (c > 0) {
@@ -136,6 +137,8 @@ void perm_from_coord(uint coord, uint n, uint* perm) {
         perm[i] = range[l];
         range.erase(range.begin() + l);
     }
+    
+    delete[] icount;
 }
 
 void layout_from_coord(uint c, uint n, uint k, uint* l) {
