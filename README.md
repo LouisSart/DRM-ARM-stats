@@ -1,6 +1,6 @@
 This is the code that I used to generate the DRM-ARM move count stats.
 
-I use `g++ -Wall gen_full_data.cpp` to compile
+Use `g++ -std=c++14 -Wall gen_full_data.cpp` to compile
 
 and `./a.out` to generate the "full_data.csv" file.
 

@@ -12,7 +12,7 @@ constexpr unsigned table_size = DominoCube::N_ESL * DominoCube::N_CO;
 std::array<DomiNode, table_size> table;
 
 auto unassigned = DomiNode{};
-auto filler = std::function([](DomiNode &node) -> DomiNode { return node; });
+auto filler = std::function<DomiNode(DomiNode&)>([](DomiNode &node) -> DomiNode { return node; });
 
 int main() {
 
